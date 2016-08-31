@@ -2,10 +2,10 @@ import os
 import time
 import random
 import importlib
+import pygame
 
 class Simulator(object):
     """Simulates agents in a dynamic smartcab environment.
-
     Uses PyGame to display GUI, if available.
     """
 
@@ -25,16 +25,17 @@ class Simulator(object):
         self.env = env
         self.size = size if size is not None else ((self.env.grid_size[0] + 1) * self.env.block_size, (self.env.grid_size[1] + 1) * self.env.block_size)
         self.width, self.height = self.size
-        
+
         self.bg_color = self.colors['white']
         self.road_width = 5
         self.road_color = self.colors['black']
 
         self.quit = False
         self.start_time = None
+        self.trials = 1
         self.current_time = 0.0
         self.last_updated = 0.0
-        self.update_delay = update_delay
+        self.update_delay = update_delay  # duration between each step (in secs)
 
         self.display = display
         if self.display:
@@ -50,7 +51,7 @@ class Simulator(object):
                     agent._sprite = self.pygame.transform.smoothscale(self.pygame.image.load(os.path.join("images", "car-{}.png".format(agent.color))), self.agent_sprite_size)
                     agent._sprite_size = (agent._sprite.get_width(), agent._sprite.get_height())
 
-                self.font = self.pygame.font.Font(None, 28)
+                self.font = self.pygame.font.Font(None, 24)
                 self.paused = False
             except ImportError as e:
                 self.display = False
@@ -61,8 +62,12 @@ class Simulator(object):
 
     def run(self, n_trials=1):
         self.quit = False
+        self.trials = n_trials
         for trial in xrange(n_trials):
-            print "Simulator.run(): Trial {}".format(trial)  # [debug]
+            # Fix: added `+1` to @trial
+            # When it prints it will start with "trial 1"
+            # [debug]
+            print "Simulator.run(): Trial {}".format(trial + 1)
             self.env.reset()
             self.current_time = 0.0
             self.last_updated = 0.0
@@ -71,7 +76,7 @@ class Simulator(object):
                 try:
                     # Update current time
                     self.current_time = time.time() - self.start_time
-                    #print "Simulator.run(): current_time = {:.3f}".format(self.current_time)
+                    # print "Simulator.run(): current_time = {:.3f}".format(self.current_time)
 
                     # Handle GUI events
                     if self.display:
@@ -148,7 +153,7 @@ class Simulator(object):
                 self.pygame.draw.circle(self.screen, agent_color, (state['destination'][0] * self.env.block_size, state['destination'][1] * self.env.block_size), 15, 2)
 
         # * Overlays
-        text_y = 10
+        text_y = 5
         for text in self.env.status_text.split('\n'):
             self.screen.blit(self.font.render(text, True, self.colors['red'], self.bg_color), (100, text_y))
             text_y += 20

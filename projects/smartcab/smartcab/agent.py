@@ -7,10 +7,11 @@ class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
 
     def __init__(self, env):
-        super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
+        # sets self.env = env, state = None, next_waypoint = None, and a default color
+        super(LearningAgent, self).__init__(env)
         self.color = 'red'  # override color
-        self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
-        
+        # simple route planner to get next_waypoint
+        self.planner = RoutePlanner(self.env, self)
         # TODO: Initialize any additional variables here
 
     def reset(self, destination=None):
@@ -19,22 +20,32 @@ class LearningAgent(Agent):
 
     def update(self, t):
         # Gather inputs
-        self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
+        # # from route planner, also displayed by simulator
+        self.next_waypoint = self.planner.next_waypoint()
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
 
         # TODO: Update state
-        
+        self.state = self.next_waypoint, inputs['light']
+        # self.state = self.next_waypoint, (inputs['oncoming'] == None or inputs['light'] == 'green')
+
         # TODO: Select action according to your policy
-        action = None
+        # Define actions
+        actions = [None, 'forward', 'left', 'right']
+
+        # QUESTION 1- select random action
+        action = random.choice(actions)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
+        # Formatting ----- My own formatting style --------
+        # Reformated updates in environment.act
+        # print "LearningAgent.update():\n\tdeadline = {}\n\tinputs = {}\n\taction = {}\n\treward = {}\n".format(deadline, inputs, action, reward)  # [debug]
+        # print "Deadline:\t\t{}".format(deadline)
 
 def run():
     """Run the agent for a finite number of trials."""
@@ -42,15 +53,24 @@ def run():
     # Set up environment and agent
     e = Environment()  # create environment (also adds some dummy traffic)
     a = e.create_agent(LearningAgent)  # create agent
-    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
-    # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
+
+    # QUESTION 1- sets `enforce_deadline` to `False`
+    e.set_primary_agent(a, enforce_deadline=False)  # specify agent to track
+    # NOTE: You can set enforce_deadline=False
+    # while debugging to allow longer trials
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
-    # NOTE: To speed up simulation, reduce update_delay and/or set display=False
+    # # create simulator (uses pygame when display=True, if available)
+    sim = Simulator(e, update_delay=0.01, display=False)
+    # NOTE: To speed up simulation,
+    # reduce update_delay and/or set display=False
 
-    sim.run(n_trials=100)  # run for a specified number of trials
-    # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
+    # run for a specified number of trials
+    sim.run(n_trials=2)
+
+    print "Finished!"
+    # NOTE: To quit midway, press Esc or close pygame window,
+    # or hit Ctrl+C on the command-line
 
 
 if __name__ == '__main__':

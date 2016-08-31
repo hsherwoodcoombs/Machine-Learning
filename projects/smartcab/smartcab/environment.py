@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from simulator import Simulator
 
+
 class TrafficLight(object):
     """A traffic light that switches periodically."""
 
@@ -27,13 +28,27 @@ class Environment(object):
     """Environment within which all agents operate."""
 
     valid_actions = [None, 'forward', 'left', 'right']
-    valid_inputs = {'light': TrafficLight.valid_states, 'oncoming': valid_actions, 'left': valid_actions, 'right': valid_actions}
-    valid_headings = [(1, 0), (0, -1), (-1, 0), (0, 1)]  # ENWS
-    hard_time_limit = -100  # even if enforce_deadline is False, end trial when deadline reaches this value (to avoid deadlocks)
+    valid_inputs = {'light': TrafficLight.valid_states,
+                    'oncoming': valid_actions, 
+                    'left': valid_actions,
+                    'right': valid_actions}
 
-    def __init__(self):
+    valid_headings = [(1, 0), (0, -1), (-1, 0), (0, 1)]  # ENWS
+    # even if enforce_deadline is False,
+    # end trial when deadline reaches this value (to avoid deadlocks)
+    hard_time_limit = -100
+
+    def __init__(self, num_dummies=3):
+        self.num_dummies = num_dummies  # no. of dummy agents
+
+        # Initialize simulation variables
         self.done = False
+        # Number of steps
         self.t = 0
+        # Number of successful runs
+        self.r = 0
+        # Trial number
+        self.n = 0
         self.agent_states = OrderedDict()
         self.status_text = ""
 
@@ -45,27 +60,30 @@ class Environment(object):
         self.roads = []
         for x in xrange(self.bounds[0], self.bounds[2] + 1):
             for y in xrange(self.bounds[1], self.bounds[3] + 1):
-                self.intersections[(x, y)] = TrafficLight()  # a traffic light at each intersection
+                # a traffic light at each intersection
+                self.intersections[(x, y)] = TrafficLight()
 
         for a in self.intersections:
             for b in self.intersections:
                 if a == b:
                     continue
-                if (abs(a[0] - b[0]) + abs(a[1] - b[1])) == 1:  # L1 distance = 1
+                # L1 distance = 1
+                if (abs(a[0] - b[0]) + abs(a[1] - b[1])) == 1:
                     self.roads.append((a, b))
 
         # Dummy agents
-        self.num_dummies = 3  # no. of dummy agents
         for i in xrange(self.num_dummies):
             self.create_agent(DummyAgent)
 
-        # Primary agent
+        # Primary agent and associated parameters
         self.primary_agent = None  # to be set explicitly
         self.enforce_deadline = False
 
     def create_agent(self, agent_class, *args, **kwargs):
         agent = agent_class(self, *args, **kwargs)
-        self.agent_states[agent] = {'location': random.choice(self.intersections.keys()), 'heading': (0, 1)}
+        self.agent_states[agent] = {'location':
+                                    random.choice(self.intersections.keys()),
+                                    'heading': (0, 1)}
         return agent
 
     def set_primary_agent(self, agent, enforce_deadline=False):
@@ -75,6 +93,7 @@ class Environment(object):
     def reset(self):
         self.done = False
         self.t = 0
+        self.n += 1
 
         # Reset traffic lights
         for traffic_light in self.intersections.itervalues():
@@ -91,8 +110,13 @@ class Environment(object):
 
         start_heading = random.choice(self.valid_headings)
         deadline = self.compute_dist(start, destination) * 5
-        print "Environment.reset(): Trial set up with start = {}, destination = {}, deadline = {}".format(start, destination, deadline)
-
+        # print "Environment.reset(): Trial set up with start = {}, destination = {}, deadline = {}".format(start, destination, deadline)
+        # ---- Add custom formating -----
+        print "********** Environment.reset() **********"
+        print "Trial set up!"
+        print "Trial Deadline: {}".format(deadline)
+        print "Trial Destination: {}".format(destination)
+        print "*****************************************\n"
         # Initialize agent(s)
         for agent in self.agent_states.iterkeys():
             self.agent_states[agent] = {
@@ -103,7 +127,8 @@ class Environment(object):
             agent.reset(destination=(destination if agent is self.primary_agent else None))
 
     def step(self):
-        #print "Environment.step(): t = {}".format(self.t)  # [debug]
+        # print "Environment.step(): t = {}".format(self.t)
+        # [debug]
 
         # Update traffic lights
         for intersection, traffic_light in self.intersections.iteritems():
@@ -113,7 +138,9 @@ class Environment(object):
         for agent in self.agent_states.iterkeys():
             agent.update(self.t)
 
-        self.t += 1
+        if self.done:
+            return  # primary agent might have reached destination
+
         if self.primary_agent is not None:
             agent_deadline = self.agent_states[self.primary_agent]['deadline']
             if agent_deadline <= self.hard_time_limit:
@@ -122,7 +149,10 @@ class Environment(object):
             elif self.enforce_deadline and agent_deadline <= 0:
                 self.done = True
                 print "Environment.step(): Primary agent ran out of time! Trial aborted."
+                print "Destination successes: {}/{}".format(self.r,self.n)
             self.agent_states[self.primary_agent]['deadline'] = agent_deadline - 1
+
+        self.t += 1
 
     def sense(self, agent):
         assert agent in self.agent_states, "Unknown agent!"
@@ -150,7 +180,7 @@ class Environment(object):
                 if left != 'forward':  # we don't want to override left == 'forward'
                     left = other_heading
 
-        return {'light': light, 'oncoming': oncoming, 'left': left, 'right': right}  # TODO: make this a namedtuple
+        return {'light': light, 'oncoming': oncoming, 'left': left, 'right': right}
 
     def get_deadline(self, agent):
         return self.agent_states[agent]['deadline'] if agent is self.primary_agent else None
@@ -163,7 +193,7 @@ class Environment(object):
         location = state['location']
         heading = state['heading']
         light = 'green' if (self.intersections[location].state and heading[1] != 0) or ((not self.intersections[location].state) and heading[0] != 0) else 'red'
-        sense = self.sense(agent)
+        inputs = self.sense(agent)
 
         # Move agent if within bounds and obeys traffic rules
         reward = 0  # reward/penalty
@@ -172,12 +202,12 @@ class Environment(object):
             if light != 'green':
                 move_okay = False
         elif action == 'left':
-            if light == 'green' and (sense['oncoming'] == None or sense['oncoming'] == 'left'):
+            if light == 'green' and (inputs['oncoming'] == None or inputs['oncoming'] == 'left'):
                 heading = (heading[1], -heading[0])
             else:
                 move_okay = False
         elif action == 'right':
-            if light == 'green' or sense['left'] != 'straight':
+            if light == 'green' or inputs['left'] != 'forward':
                 heading = (-heading[1], heading[0])
             else:
                 move_okay = False
@@ -191,7 +221,8 @@ class Environment(object):
                 #if self.bounds[0] <= location[0] <= self.bounds[2] and self.bounds[1] <= location[1] <= self.bounds[3]:  # bounded
                 state['location'] = location
                 state['heading'] = heading
-                reward = 2.0 if action == agent.get_next_waypoint() else -0.5  # valid, but is it correct? (as per waypoint)
+                # valid, but is it correct? (as per waypoint)
+                reward = 2.0 if action == agent.get_next_waypoint() else -0.5
             else:
                 # Valid null move
                 reward = 0.0
@@ -204,11 +235,34 @@ class Environment(object):
                 if state['deadline'] >= 0:
                     reward += 10  # bonus
                 self.done = True
-                print "Environment.act(): Primary agent has reached destination!"  # [debug]
-            self.status_text = "state: {}\naction: {}\nreward: {}".format(agent.get_state(), action, reward)
-            #print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)  # [debug]
+                self.r += 1
+                # [debug]
+                print "********************************"
+                print "Environment.act(): Primary agent has reached destination!"
+                print "Destination successes: {}/{}".format(self.r,self.n)
+            self.status_text = "deadline: {}\ntraffic: {}\nlight: {}\nstate: {}\naction: {}\nreward: {}".format(state['deadline'], inputs['oncoming'], inputs['light'],agent.get_state(), action, reward)
+            # My formatting style
+            # Have terminal print more specific updates
+            print "------------ UPDATE ------------"
+            print "Started in state:\t{}".format(location)
+            print "Traffic:\t\t{}".format(inputs['oncoming'])
+            print "Light\t\t\t{}".format(inputs['light'])
+            print "Took action:\t\t{}".format(action)
+            print "Ended in state:\t\t({}, {})".format(heading[0] + location[0], heading[1] + location[1])
+            print "Got reward:\t\t{}\n".format(reward)
+            # print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)
+            ## [debug]
 
         return reward
+
+    def get_reach(self):
+        return self.r
+
+    def get_num_trials(self):
+        return self.t
+
+    def get_ratio(self):
+        return self.r / self.t
 
     def compute_dist(self, a, b):
         """L1 distance between two points."""
@@ -225,6 +279,7 @@ class Agent(object):
         self.color = 'cyan'
 
     def reset(self, destination=None):
+    # Resets the current state to the start state
         pass
 
     def update(self, t):
@@ -241,7 +296,8 @@ class DummyAgent(Agent):
     color_choices = ['blue', 'cyan', 'magenta', 'orange']
 
     def __init__(self, env):
-        super(DummyAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
+        # sets self.env = env, state = None, next_waypoint = None, and a default color
+        super(DummyAgent, self).__init__(env)
         self.next_waypoint = random.choice(Environment.valid_actions[1:])
         self.color = random.choice(self.color_choices)
 
