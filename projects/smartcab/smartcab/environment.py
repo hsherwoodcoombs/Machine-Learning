@@ -49,6 +49,8 @@ class Environment(object):
         self.r = 0
         # Trial number
         self.n = 0
+        # Running total of rewards
+        self.total_reward = 0.0
         self.agent_states = OrderedDict()
         self.status_text = ""
 
@@ -149,7 +151,8 @@ class Environment(object):
             elif self.enforce_deadline and agent_deadline <= 0:
                 self.done = True
                 print "Environment.step(): Primary agent ran out of time! Trial aborted."
-                print "Destination successes: {}/{}".format(self.r,self.n)
+                print "Destination successes: {}/{}".format(self.r, self.n)
+                print "Total reward for trip: {}".format(self.total_reward)
             self.agent_states[self.primary_agent]['deadline'] = agent_deadline - 1
 
         self.t += 1
@@ -230,20 +233,23 @@ class Environment(object):
             # Invalid move
             reward = -1.0
 
+
         if agent is self.primary_agent:
             if state['location'] == state['destination']:
                 if state['deadline'] >= 0:
-                    reward += 10  # bonus
+                    reward += 10.0  # bonus
                 self.done = True
                 self.r += 1
                 # [debug]
                 print "********************************"
                 print "Environment.act(): Primary agent has reached destination!"
                 print "Destination successes: {}/{}".format(self.r,self.n)
+                print "Total rewards: {}".format(self.total_reward + 10.0)
             self.status_text = "deadline: {}\ntraffic: {}\nlight: {}\nstate: {}\naction: {}\nreward: {}".format(state['deadline'], inputs['oncoming'], inputs['light'],agent.get_state(), action, reward)
             # My formatting style
             # Have terminal print more specific updates
             print "------------ UPDATE ------------"
+            print "Deadline:\t\t{}".format(state['deadline'])
             print "Started in state:\t{}".format(location)
             print "Traffic:\t\t{}".format(inputs['oncoming'])
             print "Light\t\t\t{}".format(inputs['light'])
@@ -253,7 +259,9 @@ class Environment(object):
             # print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)
             ## [debug]
 
+        
         return reward
+        self.total_reward += reward
 
     def get_reach(self):
         return self.r

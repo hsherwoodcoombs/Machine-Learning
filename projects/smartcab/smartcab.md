@@ -1,5 +1,19 @@
 # Project Report
 
+## Introduction
+The smartcab problem poses a goal for which the agent should learn an optimal policy in navigating the road grid while obeying traffic rules, avoiding accidents, and reaching a passengers destination in the allotted time. The implementation of the policy will be based on the rewards and penalties the agent receives from the actions it takes. 
+
+The smartcab receives a  positive reward 
+•	For each successfully completed trip  
+
+•	A smaller reward for each action it executes successfully that obeys traffic rules  
+
+The smartcab recieves a negative reward
+•	For any incorrect action  
+
+•	A larger penalty for any action that violates traffic rules or causes an accident with another vehicle
+
+
 ## Observe what you see with the agent's behavior as it takes random actions. Does the smartcab eventually make it to the destination? Are there any other interesting observations to note?
 
 - Yes, the smartcab eventually does make it to the destination, however it is not optimum but rather completely random.
