@@ -3,15 +3,42 @@
 ## Introduction
 The smartcab problem poses a goal for which the agent should learn an optimal policy in navigating the road grid while obeying traffic rules, avoiding accidents, and reaching a passengers destination in the allotted time. The implementation of the policy will be based on the rewards and penalties the agent receives from the actions it takes. 
 
-The smartcab receives a  positive reward 
-•	For each successfully completed trip  
+### Markov Decision Processes (MDPs)
 
-•	A smaller reward for each action it executes successfully that obeys traffic rules  
+The MDP can be treated as a 5-tuple, where:
+- S is the set of states
+- A is the set of actions
+- P returns the state of transition probabilities
+
+The state space of the search problem is defined the agents environment and the agents own parameter locations. The upper bound on the state space for the original 6x8 grid can be represented by 
+
+We can treat the the smartcab environment as **stochastic** or **deterministic** because the environment does posses some inherent randomness and actions do not always produce the same result. For these reasons, I believe the environment is more stochastic than deterministic. That parameter values that are *not* predictable are traffic lights and traffic (locations of other agents). This *stochastic* environment is more complex and requires more learning. With many states and a stochastic environment, a good model can be difficult to produce without training a the learner itself. That is, to return non-deterministic transition probabilities, state-action pairs must be learned.
+
+
+The environment can also be described as **partially observable**, as opposed to fully observable. The cab needs to apply the unpredictable nature of what it encounters (storing it to memory) to make good optimal decisions in addition to what it senses; the optimal decision can benefit by information it acquired from the past. An example could be the case of a collision. If a cab observed long lights on a certain road. Knowing this could be applied to make the best decision. (This could be somewhat preconcerted in the smartcab model but would apply to a more realistic one.)
+
+We can also describe the environment as **benign**. In the model there are is no ulterior motive (like in the prisoners dilemma) or even with real cab drivers who fight for passengers. 
+
+
+The state space of our model **discrete** when a deadline is enforced. Because the smartcab is limited to a finite number of actions it can take before a trial is aborted it acts in a discrete environment. It can be noted that in a more realistic model, the state space would more likely be **continuous**.
+
+
+We can therefor sum up the smartcab model with the attributes:
+**Partially observable, stochastic, discrete, multi agent, benign **
+
+A continuous state space iUsing reinforcement learning and  implementing a Markov decision process, an optimal reward function can be maximized through iteration. 
+
+The MDP for the smartcab is s
+
+The smartcab receives a  positive reward 
+• For each successfully completed trip  
+
+• A smaller reward for each action it executes successfully that obeys traffic rules  
 
 The smartcab recieves a negative reward
-•	For any incorrect action  
+• For any incorrect action  
 
-•	A larger penalty for any action that violates traffic rules or causes an accident with another vehicle
+• A larger penalty for any action that violates traffic rules or causes an accident with another vehicle
 
 
 ## Observe what you see with the agent's behavior as it takes random actions. Does the smartcab eventually make it to the destination? Are there any other interesting observations to note?

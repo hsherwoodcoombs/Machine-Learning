@@ -66,7 +66,7 @@ def run():
     # reduce update_delay and/or set display=False
 
     # run for a specified number of trials
-    sim.run(n_trials=3)
+    sim.run(n_trials=100)
 
     print "Finished!"
     # NOTE: To quit midway, press Esc or close pygame window,

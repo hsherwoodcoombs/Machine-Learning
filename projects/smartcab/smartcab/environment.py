@@ -95,6 +95,7 @@ class Environment(object):
     def reset(self):
         self.done = False
         self.t = 0
+        self.total_reward = 0
         self.n += 1
 
         # Reset traffic lights
@@ -116,8 +117,8 @@ class Environment(object):
         # ---- Add custom formating -----
         print "********** Environment.reset() **********"
         print "Trial set up!"
-        print "Trial Deadline: {}".format(deadline)
-        print "Trial Destination: {}".format(destination)
+        print "Trial Deadline: \t{}".format(deadline)
+        print "Trial Destination: \t{}".format(destination)
         print "*****************************************\n"
         # Initialize agent(s)
         for agent in self.agent_states.iterkeys():
@@ -151,8 +152,8 @@ class Environment(object):
             elif self.enforce_deadline and agent_deadline <= 0:
                 self.done = True
                 print "Environment.step(): Primary agent ran out of time! Trial aborted."
-                print "Destination successes: {}/{}".format(self.r, self.n)
-                print "Total reward for trip: {}".format(self.total_reward)
+                print "Destination successes: \t\t{}/{}".format(self.r, self.n)
+                print "Path cost for trial {} is: \t{}\n".format(self.n, self.total_reward)
             self.agent_states[self.primary_agent]['deadline'] = agent_deadline - 1
 
         self.t += 1
@@ -243,11 +244,12 @@ class Environment(object):
                 # [debug]
                 print "********************************"
                 print "Environment.act(): Primary agent has reached destination!"
-                print "Destination successes: {}/{}".format(self.r,self.n)
-                print "Total rewards: {}".format(self.total_reward + 10.0)
+                print "Destination successes: \t\t{}/{}".format(self.r,self.n)
+                print "Path cost for trial {} is: \t{}".format(self.n, self.total_reward + 10.0)
             self.status_text = "deadline: {}\ntraffic: {}\nlight: {}\nstate: {}\naction: {}\nreward: {}".format(state['deadline'], inputs['oncoming'], inputs['light'],agent.get_state(), action, reward)
             # My formatting style
             # Have terminal print more specific updates
+            self.total_reward += reward
             print "------------ UPDATE ------------"
             print "Deadline:\t\t{}".format(state['deadline'])
             print "Started in state:\t{}".format(location)
@@ -256,12 +258,12 @@ class Environment(object):
             print "Took action:\t\t{}".format(action)
             print "Ended in state:\t\t({}, {})".format(heading[0] + location[0], heading[1] + location[1])
             print "Got reward:\t\t{}\n".format(reward)
+            print "Tally of rewards:\t{}\n".format(self.total_reward)
             # print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)
             ## [debug]
 
         
         return reward
-        self.total_reward += reward
 
     def get_reach(self):
         return self.r
