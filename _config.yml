@@ -1,0 +1,8 @@
+title: Machine-learning
+description: Projects relevant to machine learning and data science
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-minimal
+
+gems:
+  - jekyll-mentions
