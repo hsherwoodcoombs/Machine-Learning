@@ -1,5 +1,6 @@
-# Project 4: Reinforcement Learning
-## Train a Smartcab How to Drive
+# Machine Learning Engineer Nanodegree
+# Reinforcement Learning
+## Project: Train a Smartcab How to Drive
 
 ### Install
 
@@ -14,7 +15,7 @@ Template code is provided in the `smartcab/agent.py` python file. Additional sup
 
 In a terminal or command window, navigate to the top-level project directory `smartcab/` (that contains this README) and run one of the following commands:
 
-```python smartcab/agent.py```
+```python smartcab/agent.py```  
 ```python -m smartcab.agent```
 
 This will run the `agent.py` file and execute your agent code.
