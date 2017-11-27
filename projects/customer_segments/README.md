@@ -1,6 +1,10 @@
 # Content: Unsupervised Learning
 ## Project: Creating Customer Segments
 
+### Objective
+Learn how to find patterns and structures in unlabeled data, perform feature transformations and improve the predictive performance of your models.
+
+
 ### Install
 
 This project requires **Python 2.7** and the following Python libraries installed:
