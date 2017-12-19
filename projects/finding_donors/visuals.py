@@ -28,7 +28,7 @@ def distribution(data, transformed = False):
     # Skewed feature plotting
     for i, feature in enumerate(['capital-gain','capital-loss']):
         ax = fig.add_subplot(1, 2, i+1)
-        ax.hist(data[feature], bins = 25, color = '#00A0A0')
+        ax.hist(data[feature], bins = 25, color = '#426994')
         ax.set_title("'%s' Feature Distribution"%(feature), fontsize = 14)
         ax.set_xlabel("Value")
         ax.set_ylabel("Number of Records")
@@ -63,8 +63,8 @@ def evaluate(results, accuracy, f1):
     fig, ax = pl.subplots(2, 3, figsize = (11,7))
 
     # Constants
-    bar_width = 0.3
-    colors = ['#A00000','#00A0A0','#00A000']
+    bar_width = 0.2
+    colors = ['#F1992B','#426994','#41BDBB', '#EB3729']
     
     # Super loop to plot four panels of data
     for k, learner in enumerate(results.keys()):
@@ -95,10 +95,10 @@ def evaluate(results, accuracy, f1):
     ax[1, 2].set_title("F-score on Testing Set")
     
     # Add horizontal lines for naive predictors
-    ax[0, 1].axhline(y = accuracy, xmin = -0.1, xmax = 3.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[1, 1].axhline(y = accuracy, xmin = -0.1, xmax = 3.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[0, 2].axhline(y = f1, xmin = -0.1, xmax = 3.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[1, 2].axhline(y = f1, xmin = -0.1, xmax = 3.0, linewidth = 1, color = 'k', linestyle = 'dashed')
+    ax[0, 1].axhline(y = accuracy, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
+    ax[1, 1].axhline(y = accuracy, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
+    ax[0, 2].axhline(y = f1, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
+    ax[1, 2].axhline(y = f1, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
     
     # Set y-limits for score panels
     ax[0, 1].set_ylim((0, 1))
@@ -110,9 +110,8 @@ def evaluate(results, accuracy, f1):
     patches = []
     for i, learner in enumerate(results.keys()):
         patches.append(mpatches.Patch(color = colors[i], label = learner))
-    pl.legend(handles = patches, bbox_to_anchor = (-.80, 2.53), \
-               loc = 'upper center', borderaxespad = 0., ncol = 3, fontsize = 'x-large')
-    
+    pl.legend(handles = patches, loc=9, bbox_to_anchor=(0.5, -0.1), ncol = 4, fontsize = 'x-large')
+
     # Aesthetics
     pl.suptitle("Performance Metrics for Three Supervised Learning Models", fontsize = 16, y = 1.10)
     pl.tight_layout()
@@ -129,9 +128,9 @@ def feature_plot(importances, X_train, y_train):
     # Creat the plot
     fig = pl.figure(figsize = (9,5))
     pl.title("Normalized Weights for First Five Most Predictive Features", fontsize = 16)
-    pl.bar(np.arange(5), values, width = 0.6, align="center", color = '#00A000', \
+    pl.bar(np.arange(5), values, width = 0.6, align="center", color = '#426994', \
           label = "Feature Weight")
-    pl.bar(np.arange(5) - 0.3, np.cumsum(values), width = 0.2, align = "center", color = '#00A0A0', \
+    pl.bar(np.arange(5) - 0.3, np.cumsum(values), width = 0.2, align = "center", color = '#FF404C', \
           label = "Cumulative Feature Weight")
     pl.xticks(np.arange(5), columns)
     pl.xlim((-0.5, 4.5))
