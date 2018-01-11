@@ -51,33 +51,33 @@ def distribution(data, transformed = False):
 def evaluate(results, accuracy, f1):
     """
     Visualization code to display results of various learners.
-    
+
     inputs:
       - learners: a list of supervised learners
       - stats: a list of dictionaries of the statistic results from 'train_predict()'
       - accuracy: The score for the naive predictor
       - f1: The score for the naive predictor
     """
-  
+
     # Create figure
-    fig, ax = pl.subplots(2, 3, figsize = (11,7))
+    fig, ax = pl.subplots(2, 3, figsize=(11, 7))
+    st = fig.suptitle("Performance Metrics for Three Supervised Learning Models", fontsize=16)
 
     # Constants
     bar_width = 0.2
-    colors = ['#F1992B','#426994','#41BDBB', '#EB3729']
-    
+    colors = ['#F1992B', '#426994', '#41BDBB', '#EB3729']
+
     # Super loop to plot four panels of data
     for k, learner in enumerate(results.keys()):
         for j, metric in enumerate(['train_time', 'acc_train', 'f_train', 'pred_time', 'acc_test', 'f_test']):
             for i in np.arange(3):
-                
                 # Creative plot code
-                ax[j/3, j%3].bar(i+k*bar_width, results[learner][i][metric], width = bar_width, color = colors[k])
-                ax[j/3, j%3].set_xticks([0.45, 1.45, 2.45])
-                ax[j/3, j%3].set_xticklabels(["1%", "10%", "100%"])
-                ax[j/3, j%3].set_xlabel("Training Set Size")
-                ax[j/3, j%3].set_xlim((-0.1, 3.0))
-    
+                ax[j / 3, j % 3].bar(i + k * bar_width, results[learner][i][metric], width=bar_width, color=colors[k])
+                ax[j / 3, j % 3].set_xticks([0.45, 1.45, 2.45])
+                ax[j / 3, j % 3].set_xticklabels(["1%", "10%", "100%"])
+                ax[j / 3, j % 3].set_xlabel("Training Set Size")
+                ax[j / 3, j % 3].set_xlim((-0.1, 3.0))
+
     # Add unique y-labels
     ax[0, 0].set_ylabel("Time (in seconds)")
     ax[0, 1].set_ylabel("Accuracy Score")
@@ -85,7 +85,7 @@ def evaluate(results, accuracy, f1):
     ax[1, 0].set_ylabel("Time (in seconds)")
     ax[1, 1].set_ylabel("Accuracy Score")
     ax[1, 2].set_ylabel("F-score")
-    
+
     # Add titles
     ax[0, 0].set_title("Model Training")
     ax[0, 1].set_title("Accuracy Score on Training Subset")
@@ -93,13 +93,13 @@ def evaluate(results, accuracy, f1):
     ax[1, 0].set_title("Model Predicting")
     ax[1, 1].set_title("Accuracy Score on Testing Set")
     ax[1, 2].set_title("F-score on Testing Set")
-    
+
     # Add horizontal lines for naive predictors
-    ax[0, 1].axhline(y = accuracy, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[1, 1].axhline(y = accuracy, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[0, 2].axhline(y = f1, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    ax[1, 2].axhline(y = f1, xmin = -0.1, xmax = 4.0, linewidth = 1, color = 'k', linestyle = 'dashed')
-    
+    ax[0, 1].axhline(y=accuracy, xmin=-0.1, xmax=4.0, linewidth=1, color='k', linestyle='dashed')
+    ax[1, 1].axhline(y=accuracy, xmin=-0.1, xmax=4.0, linewidth=1, color='k', linestyle='dashed')
+    ax[0, 2].axhline(y=f1, xmin=-0.1, xmax=4.0, linewidth=1, color='k', linestyle='dashed')
+    ax[1, 2].axhline(y=f1, xmin=-0.1, xmax=4.0, linewidth=1, color='k', linestyle='dashed')
+
     # Set y-limits for score panels
     ax[0, 1].set_ylim((0, 1))
     ax[0, 2].set_ylim((0, 1))
@@ -109,12 +109,14 @@ def evaluate(results, accuracy, f1):
     # Create patches for the legend
     patches = []
     for i, learner in enumerate(results.keys()):
-        patches.append(mpatches.Patch(color = colors[i], label = learner))
-    pl.legend(handles = patches, loc=9, bbox_to_anchor=(0.5, -0.1), ncol = 4, fontsize = 'x-large')
+        patches.append(mpatches.Patch(color=colors[i], label=learner))
+    pl.legend(handles=patches, fontsize="large", labelspacing=1, bbox_to_anchor=(1, 1.5), loc=2, borderaxespad=2)
 
     # Aesthetics
-    pl.suptitle("Performance Metrics for Three Supervised Learning Models", fontsize = 16, y = 1.10)
+    #     pl.suptitle("Performance Metrics for Three Supervised Learning Models", fontsize = 16)
     pl.tight_layout()
+    st.set_y(0.95)
+    pl.subplots_adjust(top=0.85)
     pl.show()
     
 
@@ -140,3 +142,40 @@ def feature_plot(importances, X_train, y_train):
     pl.legend(loc = 'upper center')
     pl.tight_layout()
     pl.show()  
+
+
+def makeDF(i):
+    '''
+    Create dataframe from results
+    '''
+    df = pd.DataFrame(i)
+    df.columns = ['samples_1', 'samples_10','samples_100']
+    return df
+
+
+def highlight_minmax(s):
+    '''
+    highlight the best performer in the series yellow
+    '''
+    is_min = s == s.min()
+    is_max = s == s.max()
+
+    if s.name == 'pred_time' or s.name == 'train_time':
+        return ['background-color: yellow' if v else '' for v in is_min]
+
+    else:
+        return ['background-color: yellow' if v else '' for v in is_max]
+
+
+def color_negative_red(ss):
+    '''
+    colors the worst performer red
+    '''
+    is_min = ss == ss.min()
+    is_max = ss == ss.max()
+
+    if ss.name == 'pred_time' or ss.name == 'train_time':
+        return ['color: red' if v else '' for v in is_max]
+
+    else:
+        return ['color: red' if v else '' for v in is_min]
